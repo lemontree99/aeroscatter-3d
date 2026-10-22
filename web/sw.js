@@ -1,5 +1,5 @@
-const CACHE = 'aeroscatter-v0.3.0-1';
-const ASSETS = ['./', './index.html', './styles.css?v=0.3.0', './startup.js?v=0.3.0', './app.bundle.js?v=0.3.0', './app.js', './mie.js', './spheroid.js', './geometry.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
+const CACHE = 'aeroscatter-v0.3.1-1';
+const ASSETS = ['./', './index.html', './styles.css?v=0.3.1', './startup.js?v=0.3.1', './app.bundle.js?v=0.3.1', './app.js', './mie.js', './spheroid.js', './geometry.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
 });

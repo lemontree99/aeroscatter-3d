@@ -63,6 +63,29 @@ test('Spheroid example changes model, azimuth responds, and invalid parameters c
   assert.equal(elements['pol-value'].textContent, '—');
   assert.equal(elements['absorption-value'].textContent, '');
 });
+test('Dragging aspect from defaults renders, announces radius adjustment, and respects worst-case limits', () => {
+  const { env, elements, frames } = environment();
+  runInNewContext(source, env); frames.shift()();
+  elements.aspect.value = 2; elements.aspect.listeners.input();
+  frames.shift()();
+  assert.equal(elements.error.hidden, true);
+  assert.match(elements['shape-status'].textContent, /已从 0.080 调整/);
+  assert.notEqual(elements['pol-value'].textContent, '—');
+  for (const aspect of [0.25, 0.95, 1.05, 2, 4]) {
+    elements.radius.value = 1;
+    elements.wavelength.value = 0.4; elements.index.value = 2; elements.kappa.value = 1;
+    elements.aspect.value = aspect; elements.aspect.listeners.input();
+    frames.shift()();
+    assert.equal(elements.error.hidden, true, `aspect ${aspect}`);
+    assert.ok(Number(elements.radius.value) >= 0.001);
+  }
+  elements.radius.value = 0.001;
+  elements.wavelength.value = 0.8;
+  elements.aspect.value = 1; elements.aspect.listeners.input();
+  frames.shift()();
+  assert.equal(elements.error.hidden, true);
+  assert.match(elements['shape-status'].textContent, /切回球体/);
+});
 test('Pending offline setup cannot block rendering and has a timeout message', () => {
   const { env, elements, frames, timers } = environment('http:');
   env.navigator.serviceWorker = { register: () => new Promise(() => {}) };

@@ -297,7 +297,22 @@ function draw() {
 }
 
 for (const id of ids) {
-  inputs[id].addEventListener('input', () => update(!simulation || ['radius', 'wavelength', 'index', 'kappa', 'aspect'].includes(id)));
+  inputs[id].addEventListener('input', () => {
+    let adjustment = '';
+    if (id === 'aspect') {
+      const p = parameters();
+      const limit = 0.3 * p.wavelength / (2 * Math.PI * Math.hypot(p.index, p.kappa) * Math.max(p.aspect ** (-1 / 3), p.aspect ** (2 / 3)));
+      if (p.aspect !== 1 && p.radius > limit) {
+        inputs.radius.value = (Math.floor(limit * 1000) / 1000).toFixed(3);
+        adjustment = `切换轴比时，等体积半径已从 ${p.radius.toFixed(3)} 调整为 ${Number(inputs.radius.value).toFixed(3)} μm，以满足椭球近似限制。`;
+      } else if (p.aspect === 1 && 2 * Math.PI * p.radius / p.wavelength < 0.05) {
+        inputs.radius.value = (Math.ceil(0.05 * p.wavelength / (2 * Math.PI) * 1000) / 1000).toFixed(3);
+        adjustment = `切回球体时，等体积半径已调整为 ${Number(inputs.radius.value).toFixed(3)} μm，以满足 Mie 尺寸范围。`;
+      }
+    }
+    update(!simulation || ['radius', 'wavelength', 'index', 'kappa', 'aspect'].includes(id));
+    if (adjustment) { $('shape-status').textContent = adjustment + ' ' + $('shape-status').textContent; save(); }
+  });
   inputs[id].addEventListener('change', save);
 }
 $('reset').addEventListener('click', () => { setParameters(defaults); camera.yaw = -0.4; camera.pitch = 0.55; update(); save(); });

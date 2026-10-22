@@ -9,14 +9,14 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=0.3.0">
-  <script defer src="./startup.js?v=0.3.0"></script>
-  <script defer src="./app.bundle.js?v=0.3.0"></script>
+  <link rel="stylesheet" href="./styles.css?v=0.3.1">
+  <script defer src="./startup.js?v=0.3.1"></script>
+  <script defer src="./app.bundle.js?v=0.3.1"></script>
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="./"><img src="./icons/icon.svg" alt="" width="38" height="38"><span>AeroScatter <b>3D</b><small>气溶胶散射与偏振实验室</small></span></a>
-    <div class="header-actions"><span class="version">v0.3 · 球体与旋转椭球</span><button id="install" hidden>安装 App</button><a href="#guide">使用说明 ↗</a></div>
+    <div class="header-actions"><span class="version">v0.3.1 · 球体与旋转椭球</span><button id="install" hidden>安装 App</button><a href="#guide">使用说明 ↗</a></div>
   </header>
   <main>
     <section class="intro"><div class="eyebrow">LIGHT · PARTICLE · POLARIZATION</div><h1>看见散射，理解偏振。</h1><p>改变粒子与光的参数，观察三维强度分布，以及选定方向上的电场分量。</p></section>
@@ -27,10 +27,10 @@
         <input id="aspect" type="range" min="0.25" max="4" step="0.05" value="1">
         <div class="range-ends"><span>0.25 · 扁椭球</span><span>4.00 · 长椭球</span></div>
         <button id="ellipsoid-example" class="quiet">小粒子椭球示例</button>
-        <p class="hint">a 为赤道半轴、c 为 Z 方向半轴；c/a=1 为球。等体积半径固定时改变轴比。椭球仅支持小粒子电偶极近似。</p>
+        <p class="hint">a 为赤道半轴、c 为 Z 方向半轴；c/a=1 为球。调节轴比时尽量保持等体积半径，超限会自动调整半径并提示。椭球仅支持小粒子电偶极近似。</p>
         <label for="radius">等体积半径 r <output id="radius-value" for="radius"></output></label>
-        <input id="radius" type="range" min="0.004" max="1" step="0.001" value="0.08">
-        <div class="range-ends"><span>0.004 μm</span><span>1.000 μm</span></div>
+        <input id="radius" type="range" min="0.001" max="1" step="0.001" value="0.08">
+        <div class="range-ends"><span>0.001 μm</span><span>1.000 μm</span></div>
         <label for="wavelength">真空波长 λ <output id="wavelength-value" for="wavelength"></output></label>
         <input id="wavelength" type="range" min="0.4" max="0.8" step="0.01" value="0.55">
         <div class="range-ends"><span>0.40 μm</span><span>0.80 μm</span></div>

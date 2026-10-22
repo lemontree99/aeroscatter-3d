@@ -1,6 +1,6 @@
 {
   "name": "aeroscatter-3d",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "Interactive single-sphere Mie scattering and polarization explorer",
   "type": "module",
