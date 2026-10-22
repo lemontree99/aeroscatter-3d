@@ -1,5 +1,7 @@
 # AeroScatter 3D · v0.3
 
+[在线使用](https://lemontree99.github.io/aeroscatter-3d/) · [GitHub 源码](https://github.com/lemontree99/aeroscatter-3d)
+
 ## v0.3：长短轴调节
 
 轴比 c/a 可调 0.25–4：1 为球体，>1 为长椭球，<1 为扁椭球；r 为等体积半径，r³=a²c。点击“椭球示例”可直接进入可计算参数。
