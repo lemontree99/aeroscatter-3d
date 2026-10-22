@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "AeroScatter 3D · 散射与偏振",
+  "short_name": "AeroScatter",
+  "description": "球形气溶胶 Mie 散射与线偏振交互实验室",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f5",
+  "theme_color": "#102d3b",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

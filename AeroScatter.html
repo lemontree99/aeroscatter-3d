@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d3b">
+  <meta name="description" content="球体 Mie 散射与小粒子旋转椭球的电偶极散射、三维强度和偏振演示。支持离线使用。">
+  <title>AeroScatter 3D · 散射与偏振</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22512%22%20height%3D%22512%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22110%22%20fill%3D%22%23102d3b%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2372c5ca%22%20stroke-width%3D%228%22%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%2F%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%20transform%3D%22rotate(60%20256%20256)%22%2F%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%20transform%3D%22rotate(120%20256%20256)%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M78%20256h122m112%200h122%22%20stroke%3D%22%23e0edf0%22%20stroke-width%3D%2210%22%2F%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%2229%22%20fill%3D%22%23e0edf0%22%2F%3E%3C%2Fsvg%3E%0A" type="image/svg+xml">
+<style>:root{color-scheme:light dark;--bg:#f4f6f5;--surface:#fff;--ink:#17323c;--muted:#5c7078;--line:#dbe3e4;--intensity:#197e8e;--per:#2374cb;--par:#bd6526;--stage:#f6fafb;--accent:#176f79;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;font-size:15px;line-height:1.6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink)}a{color:var(--accent);text-underline-offset:4px}button,input{font:inherit}button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:7px 12px;cursor:pointer}button:hover{border-color:var(--accent)}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible,canvas:focus-visible{outline:3px solid var(--per);outline-offset:4px}button[hidden]{display:none}.topbar{max-width:1320px;margin:auto;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;color:var(--ink);text-decoration:none;font-size:21px;letter-spacing:-.5px}.brand b{font-weight:500;color:var(--accent)}.brand small{display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px}.header-actions{display:flex;align-items:center;gap:20px;font-size:13px}.version{color:var(--muted)}main{max-width:1320px;margin:auto;padding:32px 40px 40px}.intro{margin:12px 0 28px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--muted);font-weight:600}h1{font-size:36px;font-weight:550;letter-spacing:-1px;margin:8px 0}h2{font-size:17px;font-weight:600;margin:0}h3{font-size:16px;font-weight:550;margin:10px 0}p{margin:8px 0}.intro p{color:var(--muted)}.workspace{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;align-items:start}.controls,.experiment{background:var(--surface);border:1px solid var(--line);border-radius:12px}.controls{padding:22px}.section-title,.stage-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.quiet{font-size:12px;background:transparent;padding:5px 8px}.controls label:not(.check){display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:24px;font-size:13px}.controls output{font-variant-numeric:tabular-nums;color:var(--accent);white-space:nowrap}input[type=range]{display:block;width:100%;accent-color:var(--accent);margin:10px 0;min-height:24px;cursor:pointer}.range-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}hr{border:0;border-top:1px solid var(--line);margin:24px 0}.hint,.model-note{font-size:12px;color:var(--muted);margin-top:12px}.check{display:flex;align-items:center;gap:9px;font-size:13px;min-height:32px}.check input{width:17px;height:17px;accent-color:var(--accent)}.model-note{line-height:1.8}.experiment{overflow:hidden}.stage-heading{padding:20px 24px 0}.stage-heading h2{margin-top:4px}.stage{position:relative;margin:12px 12px 0;background:var(--stage);border-radius:8px}canvas{display:block;width:100%;height:440px;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.stage-tip{position:absolute;bottom:12px;left:16px;font-size:11px;color:var(--muted);pointer-events:none}.legend{display:flex;gap:20px;flex-wrap:wrap;margin:16px 24px 8px;font-size:12px}.legend>span{display:flex;align-items:center;gap:6px}.swatch{width:17px;height:3px;display:inline-block}.intensity{background:var(--intensity)}.perpendicular{background:var(--per)}.parallel{background:var(--par)}.scale-note{font-size:11px;color:var(--muted);margin:0 24px 20px}.readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 24px;gap:16px}.readings span{display:block;font-size:12px;color:var(--muted)}.readings strong{display:block;font-weight:500;font-size:25px;font-variant-numeric:tabular-nums;margin-top:4px}.components{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:20px 24px 0}.components label{display:flex;justify-content:space-between;font-size:12px}.components span{font-variant-numeric:tabular-nums}.components meter{width:100%;height:12px;display:block;margin-top:10px;border:0;appearance:none;background:var(--line)}meter::-webkit-meter-bar{background:var(--line);border:0;border-radius:0}#per-meter::-webkit-meter-optimum-value{background:var(--per)}#par-meter::-webkit-meter-optimum-value{background:var(--par)}#per-meter::-moz-meter-bar{background:var(--per)}#par-meter::-moz-meter-bar{background:var(--par)}.orientation{font-size:12px;color:var(--muted);padding:0 24px;margin:16px 0 22px}#error{color:#b63830;padding:12px 24px}.guide{margin-top:48px;scroll-margin-top:20px}.guide>h2{font-size:25px;margin:8px 0 24px;font-weight:500}.guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}.guide article{border-top:1px solid var(--line);padding-top:18px}.step{font-size:11px;color:var(--accent);letter-spacing:1px}.guide p,.technical p{font-size:13px;color:var(--muted)}.technical{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}summary{cursor:pointer;font-size:13px}.technical p{max-width:940px;margin-top:14px}footer{max-width:1240px;margin:auto;padding:20px 0 32px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1c25;--surface:#122732;--ink:#e0edf0;--muted:#9eb2bb;--line:#2b424e;--intensity:#58bac6;--per:#7bb8ff;--par:#f2ab70;--stage:#10232d;--accent:#72c5ca}#error{color:#ffa39b}}
+@media(max-width:850px){.topbar{padding:20px 24px}main{padding:24px}.workspace{grid-template-columns:220px minmax(0,1fr);gap:16px}.controls{padding:18px}.stage-heading{padding:16px 16px 0}.stage-heading h2{font-size:15px}.stage-heading .eyebrow{font-size:10px}canvas{height:400px}.readings{padding:16px;gap:8px}.readings strong{font-size:21px}.readings span{font-size:11px}.legend,.scale-note{margin-left:16px;margin-right:16px}.components{padding:16px 16px 0;gap:14px}.orientation{padding:0 16px}footer{margin:0 24px}.guide-grid{gap:20px}.version{display:none}}
+@media(max-width:620px){.topbar{padding:16px;gap:10px}.brand{font-size:18px;gap:8px}.brand img{width:30px;height:30px}.brand small{font-size:9px;letter-spacing:.5px}.header-actions{gap:8px;font-size:11px}.header-actions button{font-size:11px;padding:6px}.header-actions a{white-space:nowrap}main{padding:18px 14px}h1{font-size:29px}.intro{margin-top:4px}.intro p{font-size:13px}.workspace{display:flex;flex-direction:column}.controls{width:100%;display:grid;grid-template-columns:1fr 1fr;column-gap:22px;padding:18px}.controls>*{grid-column:1/-1}.controls label:not(.check){margin-top:18px}.experiment{width:100%}canvas{height:360px}.readings{gap:8px}.readings strong{font-size:20px}.readings span{font-size:10px}.legend{gap:12px}.components{grid-template-columns:1fr}.guide-grid{grid-template-columns:1fr}.guide{margin-top:32px}.guide>h2{font-size:22px}footer{margin:0 14px}.stage-tip{font-size:10px}}
+</style>
+
+
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><img src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22512%22%20height%3D%22512%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22110%22%20fill%3D%22%23102d3b%22%2F%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2372c5ca%22%20stroke-width%3D%228%22%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%2F%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%20transform%3D%22rotate(60%20256%20256)%22%2F%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22256%22%20rx%3D%22142%22%20ry%3D%2272%22%20transform%3D%22rotate(120%20256%20256)%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M78%20256h122m112%200h122%22%20stroke%3D%22%23e0edf0%22%20stroke-width%3D%2210%22%2F%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%2229%22%20fill%3D%22%23e0edf0%22%2F%3E%3C%2Fsvg%3E%0A" alt="" width="38" height="38"><span>AeroScatter <b>3D</b><small>气溶胶散射与偏振实验室</small></span></a>
+    <div class="header-actions"><span class="version">v0.3 · 球体与旋转椭球</span><button id="install" hidden>安装 App</button><a href="#guide">使用说明 ↗</a></div>
+  </header>
+  <main>
+    <section class="intro"><div class="eyebrow">LIGHT · PARTICLE · POLARIZATION</div><h1>看见散射，理解偏振。</h1><p>改变粒子与光的参数，观察三维强度分布，以及选定方向上的电场分量。</p></section>
+    <div class="workspace">
+      <aside class="controls" aria-label="模拟参数">
+        <div class="section-title"><h2>实验参数</h2><button id="reset" class="quiet">恢复默认</button></div>
+        <label for="aspect">轴比 c/a <output id="aspect-value" for="aspect"></output></label>
+        <input id="aspect" type="range" min="0.25" max="4" step="0.05" value="1">
+        <div class="range-ends"><span>0.25 · 扁椭球</span><span>4.00 · 长椭球</span></div>
+        <button id="ellipsoid-example" class="quiet">小粒子椭球示例</button>
+        <p class="hint">a 为赤道半轴、c 为 Z 方向半轴；c/a=1 为球。等体积半径固定时改变轴比。椭球仅支持小粒子电偶极近似。</p>
+        <label for="radius">等体积半径 r <output id="radius-value" for="radius"></output></label>
+        <input id="radius" type="range" min="0.004" max="1" step="0.001" value="0.08">
+        <div class="range-ends"><span>0.004 μm</span><span>1.000 μm</span></div>
+        <label for="wavelength">真空波长 λ <output id="wavelength-value" for="wavelength"></output></label>
+        <input id="wavelength" type="range" min="0.4" max="0.8" step="0.01" value="0.55">
+        <div class="range-ends"><span>0.40 μm</span><span>0.80 μm</span></div>
+        <label for="index">折射率实部 n <output id="index-value" for="index"></output></label>
+        <input id="index" type="range" min="1.01" max="2" step="0.01" value="1.5">
+        <div class="range-ends"><span>1.01</span><span>2.00</span></div>
+        <label for="kappa">吸收虚部 κ <output id="kappa-value" for="kappa"></output></label>
+        <input id="kappa" type="range" min="0" max="1" step="0.001" value="0">
+        <div class="range-ends"><span>0 · 无吸收</span><span>1.000</span></div>
+        <p class="hint"><span id="complex-index">m = 1.50 + 0.000i</span><br>采用 m = n + iκ，κ ≥ 0 表示吸收。参数不对应特定气溶胶成分。</p>
+        <hr>
+        <h2>选择散射方向</h2>
+        <label for="theta">散射角 θ <output id="theta-value" for="theta"></output></label>
+        <input id="theta" type="range" min="0" max="180" step="1" value="90">
+        <div class="range-ends"><span>前向 0°</span><span>后向 180°</span></div>
+        <label for="phi">方位角 φ <output id="phi-value" for="phi"></output></label>
+        <input id="phi" type="range" min="0" max="360" step="1" value="0">
+        <p class="hint">方位角让散射方向绕入射光轴转动；拖动图像只改变你的观察视角。</p>
+        <hr>
+        <label class="check"><input id="plane" type="checkbox">显示散射平面</label>
+        <p class="model-note">空气中均匀粒子 · 对称轴 Z<br>非偏振入射 · 单次散射 · 可吸收</p>
+      </aside>
+      <section class="experiment" aria-label="三维散射演示">
+        <div class="stage-heading"><div><span class="eyebrow">3D SCATTERING</span><h2>散射强度的空间分布</h2></div><button id="view-reset" class="quiet">复位视角</button></div>
+        <p id="shape-status" class="orientation" aria-live="polite"></p>
+        <div class="stage"><canvas id="scene" tabindex="0" role="img" aria-label="球体或旋转椭球的三维散射强度与偏振方向。拖动或使用方向键旋转视角。">浏览器需要支持 Canvas 才能显示三维图。</canvas><div class="stage-tip">拖动 / 方向键旋转视角</div></div>
+        <div class="legend"><span><i class="swatch intensity"></i>总强度网格</span><span><i class="swatch perpendicular"></i>E⊥ 垂直电场</span><span><i class="swatch parallel"></i>E∥ 平行电场</span></div>
+        <p class="scale-note">网格半径 ∝ √相对强度；每组参数独立归一化，不能用图形大小比较绝对散射强弱。电场箭头只表示方向。</p>
+        <div class="readings" aria-live="polite" aria-atomic="true">
+          <div><span>尺寸参数 x</span><strong id="x-value">—</strong></div>
+          <div><span>选定方向相对强度</span><strong id="intensity-value">—</strong></div>
+          <div><span>线偏振度 DoLP</span><strong id="pol-value">—</strong></div>
+        </div>
+        <p id="absorption-value" class="orientation" aria-live="polite"></p>
+        <div class="components"><div><label for="per-meter">垂直分量 I⊥ <span id="per-value"></span></label><meter id="per-meter" min="0" max="100" value="50">50%</meter></div><div><label for="par-meter">平行分量 I∥ <span id="par-value"></span></label><meter id="par-meter" min="0" max="100" value="50">50%</meter></div></div>
+        <p id="orientation" class="orientation"></p><p id="error" role="alert" hidden></p>
+      </section>
+    </div>
+    <section id="guide" class="guide"><div class="eyebrow">A FEW THINGS TO KNOW</div><h2>从方向，到强度，再到偏振。</h2><div class="guide-grid">
+      <article><span class="step">01 / 几何</span><h3>平面由两条传播方向决定</h3><p>入射方向与选定的散射方向共同确定散射平面。θ 改变偏离入射方向的角度；φ 改变绕入射轴的方位。前向与后向时平面不唯一，图中使用当前方位角的极限基。</p></article>
+      <article><span class="step">02 / 强度</span><h3>不是粒子表面，也不是光的轨迹</h3><p>网格是各方向散射强度的示意包络。离中心越远，该方向相对强度越大。球体用 I = (|S₁|² + |S₂|²)/2；椭球由两种入射电场诱导的偶极投影求和。所示强度不是带有仪器与距离信息的实际辐亮度。</p></article>
+      <article><span class="step">03 / 偏振</span><h3>垂直的是电场，不是光的去向</h3><p>E⊥ 垂直于散射平面；E∥ 在面内，且与散射光传播方向垂直。条形是同一方向两分量的强度占比。小粒子近似下，90° 侧向散射趋近完全线偏振，不代表所有光只向一个平面传播。</p></article>
+    </div></section>
+    <details class="technical"><summary>物理范围、计算定义与参考资料</summary><p>球体（c/a=1）使用 Mie 级数，0.05≤x≤16；旋转椭球使用带辐射反作用修正的准静态电偶极近似，要求 |m|·2π·max(a,c)/λ≤0.3。该阈值是保守使用限制，不代表已验证的误差上界；不包含有限尺寸高阶多极、任意取向或任意形状解。等体积半径 r³=a²c，长短轴比为 max(c/a,a/c)。中央粒子示意保留轴比，但不与强度网格按真实长度同比例绘制。</p><p>环境折射率为1；m=n+iκ，n=1.01–2，κ=0–1，时间因子 exp(−iωt)。Qabs=Qext−Qsca；SSA=Qsca/Qext。效率统一以等体积球截面 πr² 归一化，并非椭球投影面积，也不是百分比。超出范围时不显示旧结果。</p><p>椭球对称轴固定 Z、入射光沿 X，φ 可改变强度。DoLP 使用完整线偏振相干矩阵，包含非对角项；两条 E 基方向不一定是偏振主轴。球体仍采用 |I⊥−I∥|/(I⊥+I∥)。网格逐参数归一化，不用于比较绝对强弱；不支持粒径分布或多次散射。</p><p>数值参照：<a href="https://miepython.readthedocs.io/en/stable/" target="_blank" rel="noreferrer">miepython 文档</a>；椭球准静态极化率与去极化因子采用均匀介质椭球标准解，验证范围与公式见项目 docs/TECHNICAL.md。</p></details>
+  </main>
+  <footer><span>AeroScatter 3D · 本地计算，无需上传数据</span><span id="offline-status" role="status">正在准备离线资源…</span></footer>
+  <noscript><p>请启用 JavaScript 以运行散射计算。</p></noscript>
+<script>// Runs independently of the application so a loading error is not mistaken for caching.
+(() => {
+  function failed(message) {
+    const error = document.getElementById('error');
+    error.hidden = false;
+    error.textContent = `三维图启动失败：${message}。请通过“启动 AeroScatter.command”打开网页，或把这条提示发给开发者。`;
+    document.getElementById('offline-status').textContent = '主程序未就绪；这不是离线资源下载进度';
+  }
+  window.addEventListener('error', event => {
+    if (event.target instanceof HTMLScriptElement) failed('无法读取 ' + event.target.getAttribute('src'));
+    else if (event.message) failed(event.message);
+  }, true);
+  window.addEventListener('unhandledrejection', event => failed(event.reason?.message || String(event.reason)));
+  setTimeout(() => {
+    if (document.documentElement.dataset.appReady !== 'true') failed('程序未在 8 秒内完成初始化');
+  }, 8000);
+})();
+</script>
+<script>// Generated by scripts/bundle.mjs. Edit the source modules, not this file.
+(()=>{
+// Passive homogeneous sphere: m = n + i*kappa, exp(-i*omega*t), outgoing h^(1).
+// [real, imaginary] complex pairs. Intensity amplitudes use Wiscombe normalization.
+function complexMultiply(a, b) {
+  return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
+}
+function complexDivide(a, b) {
+  const denominator = b[0] ** 2 + b[1] ** 2;
+  return [(a[0] * b[0] + a[1] * b[1]) / denominator, (a[1] * b[0] - a[0] * b[1]) / denominator];
+}
+function coefficients(x, nReal = 1.5, kappa = 0) {
+  if (!Number.isFinite(x) || x < 0.05 || x > 16 || !Number.isFinite(nReal) || nReal < 1.01 || nReal > 2 || !Number.isFinite(kappa) || kappa < 0 || kappa > 1) {
+    throw new RangeError('支持范围：0.05 ≤ x ≤ 16，1.01 ≤ n ≤ 2，0 ≤ κ ≤ 1。');
+  }
+  const m = [nReal, kappa];
+  const stop = Math.ceil(x + 4 * Math.cbrt(x) + 2);
+  const N = Math.ceil(Math.max(stop, Math.hypot(...m) * x)) + 35;
+  const D = Array.from({ length: N + 1 }, () => [0, 0]), z = m.map(v => v * x);
+  for (let n = N; n > 0; n--) {
+    const t = complexDivide([n, 0], z);
+    const reciprocal = complexDivide([1, 0], [D[n][0] + t[0], D[n][1] + t[1]]);
+    D[n - 1] = [t[0] - reciprocal[0], t[1] - reciprocal[1]];
+  }
+  let p0 = Math.sin(x), p1 = Math.sin(x) / x - Math.cos(x);
+  let c0 = Math.cos(x), c1 = Math.cos(x) / x + Math.sin(x);
+  const out = [];
+  function ratio(factor) {
+    const numerator = [factor[0] * p1 - p0, factor[1] * p1];
+    const denominator = complexMultiply(factor, [p1, -c1]);
+    denominator[0] -= p0; denominator[1] += c0;
+    return complexDivide(numerator, denominator);
+  }
+  for (let n = 1; n <= stop; n++) {
+    const A = complexDivide(D[n], m), B = complexMultiply(m, D[n]);
+    A[0] += n / x; B[0] += n / x;
+    out.push({ n, a: ratio(A), b: ratio(B) });
+    const pn = (2 * n + 1) * p1 / x - p0, cn = (2 * n + 1) * c1 / x - c0;
+    p0 = p1; p1 = pn; c0 = c1; c1 = cn;
+  }
+  return out;
+}
+
+function intensity(coeff, mu) {
+  if (!Number.isFinite(mu) || Math.abs(mu) > 1) throw new RangeError('cos θ 必须在 [-1, 1] 内。');
+  let previous = 0, pi = 1;
+  const s1 = [0, 0], s2 = [0, 0];
+  for (const { n, a, b } of coeff) {
+    const tau = n * mu * pi - (n + 1) * previous, f = (2 * n + 1) / (n * (n + 1));
+    for (let j = 0; j < 2; j++) {
+      s1[j] += f * (a[j] * pi + b[j] * tau);
+      s2[j] += f * (a[j] * tau + b[j] * pi);
+    }
+    const next = ((2 * n + 1) * mu * pi - (n + 1) * previous) / n;
+    previous = pi; pi = next;
+  }
+  const perpendicular = s1[0] ** 2 + s1[1] ** 2;
+  const parallel = s2[0] ** 2 + s2[1] ** 2;
+  const sum = perpendicular + parallel;
+  return { perpendicular, parallel, total: sum / 2, signedPolarization: sum > 0 ? (perpendicular - parallel) / sum : 0 };
+}
+
+function scatteringEfficiency(coeff, x) {
+  return 2 / x ** 2 * coeff.reduce((sum, { n, a, b }) => sum + (2 * n + 1) * (a[0] ** 2 + a[1] ** 2 + b[0] ** 2 + b[1] ** 2), 0);
+}
+
+function extinctionEfficiency(coeff, x) {
+  return 2 / x ** 2 * coeff.reduce((sum, { n, a, b }) => sum + (2 * n + 1) * (a[0] + b[0]), 0);
+}
+
+function model(radius, wavelength, index, kappa = 0) {
+  if (![radius, wavelength, index].every(Number.isFinite) || radius <= 0 || wavelength <= 0) throw new RangeError('半径、波长必须为正数。');
+  const x = 2 * Math.PI * radius / wavelength, coeff = coefficients(x, index, kappa);
+  const samples = Array.from({ length: 721 }, (_, i) => intensity(coeff, Math.cos(i * Math.PI / 720)));
+  const qsca = scatteringEfficiency(coeff, x), qext = extinctionEfficiency(coeff, x);
+  const difference = qext - qsca;
+  const qabs = Math.abs(difference) < 1e-12 * Math.max(1, qext) ? 0 : difference;
+  return { x, coeff, samples, peak: Math.max(...samples.map(s => s.total)), qsca, qext, qabs, ssa: qsca / qext };
+}
+
+// Electric dipole approximation, symmetry axis +Z, incident propagation +X.
+// alpha is in volume units / (4 pi epsilon0). Radiation reaction enforces passivity.
+function depolarization(aspect) {
+  if (!Number.isFinite(aspect) || aspect < 0.25 || aspect > 4) throw new RangeError('轴比 c/a 支持 0.25–4。');
+  let axial;
+  if (Math.abs(aspect - 1) < 1e-4) {
+    const d = aspect - 1;
+    axial = 1 / 3 - 4 * d / 15 + 6 * d * d / 35;
+  } else if (aspect > 1) {
+    const e = Math.sqrt(1 - 1 / aspect ** 2);
+    axial = (1 - e * e) / (2 * e ** 3) * (Math.log((1 + e) / (1 - e)) - 2 * e);
+  } else {
+    const e = Math.sqrt(1 / aspect ** 2 - 1);
+    axial = (1 + e * e) / e ** 3 * (e - Math.atan(e));
+  }
+  return { axial, transverse: (1 - axial) / 2 };
+}
+
+function spheroidModel(radius, wavelength, index, kappa, aspect) {
+  if (![radius, wavelength, index, kappa].every(Number.isFinite) || radius <= 0 || wavelength <= 0 || index < 1.01 || index > 2 || kappa < 0 || kappa > 1) throw new RangeError('无效的椭球尺寸、波长或折射率。');
+  const factors = depolarization(aspect), wave = 2 * Math.PI / wavelength;
+  const a = radius / Math.cbrt(aspect), c = radius * aspect ** (2 / 3);
+  const validity = Math.max(1, Math.hypot(index, kappa)) * wave * Math.max(a, c);
+  if (validity > 0.3) throw new RangeError('椭球近似要求 |m|·2π·最大半轴/λ ≤ 0.3。请减小等体积半径，或点击“小粒子椭球示例”。');
+  const delta = [index ** 2 - kappa ** 2 - 1, 2 * index * kappa];
+  function polarizability(L) {
+    const dr = 1 + L * delta[0], di = L * delta[1], den = dr * dr + di * di;
+    const re = radius ** 3 / 3 * (delta[0] * dr + delta[1] * di) / den;
+    const im = radius ** 3 / 3 * (delta[1] * dr - delta[0] * di) / den;
+    const reaction = 2 / 3 * wave ** 3;
+    const rr = 1 + reaction * im, ri = -reaction * re, norm = rr * rr + ri * ri;
+    return [(re * rr + im * ri) / norm, (im * rr - re * ri) / norm];
+  }
+  const transverse = polarizability(factors.transverse), axial = polarizability(factors.axial);
+  const t2 = transverse[0] ** 2 + transverse[1] ** 2, z2 = axial[0] ** 2 + axial[1] ** 2;
+  const mean2 = (t2 + z2) / 2, area = Math.PI * radius ** 2;
+  const qsca = 8 * Math.PI / 3 * wave ** 4 * mean2 / area;
+  const qext = 4 * Math.PI * wave * (transverse[1] + axial[1]) / 2 / area;
+  const difference = qext - qsca;
+  const qabs = Math.abs(difference) < 1e-12 * Math.max(1, qext) ? 0 : difference;
+  function evaluate(theta, phi = 0) {
+    const mu = Math.cos(theta), cp = Math.cos(phi), sp = Math.sin(phi), factor = wave ** 6;
+    const perpendicular = factor * (t2 * sp * sp + z2 * cp * cp);
+    const parallel = factor * mu * mu * (t2 * cp * cp + z2 * sp * sp);
+    const cross = factor * mu * sp * cp * (z2 - t2), sum = perpendicular + parallel;
+    return { perpendicular, parallel, total: sum / 2,
+      signedPolarization: sum ? (perpendicular - parallel) / sum : 0,
+      dolp: sum ? Math.min(1, Math.hypot(perpendicular - parallel, 2 * cross) / sum) : 0 };
+  }
+  const samples = Array.from({ length: 721 }, (_, i) => evaluate(i * Math.PI / 720));
+  return { x: wave * radius, samples, evaluate, peak: wave ** 6 * mean2, qsca, qext, qabs, ssa: qsca / qext, a, c, validity, aspect };
+}
+
+const radians = degrees => degrees * Math.PI / 180;
+const add = (a, b, scale = 1) => a.map((v, i) => v + scale * b[i]);
+
+// Incident k = +X. Changing azimuth rotates the scattering plane about X.
+function scatteringBasis(theta, phi) {
+  return {
+    direction: [Math.cos(theta), Math.sin(theta) * Math.cos(phi), Math.sin(theta) * Math.sin(phi)],
+    parallel: [-Math.sin(theta), Math.cos(theta) * Math.cos(phi), Math.cos(theta) * Math.sin(phi)],
+    perpendicular: [0, -Math.sin(phi), Math.cos(phi)],
+    radial: [0, Math.cos(phi), Math.sin(phi)]
+  };
+}
+
+
+const $ = id => document.getElementById(id);
+const defaults = { radius: 0.08, wavelength: 0.55, index: 1.5, kappa: 0, aspect: 1, theta: 90, phi: 0, plane: false };
+const ids = Object.keys(defaults), inputs = Object.fromEntries(ids.map(id => [id, $(id)]));
+const canvas = $('scene'), ctx = canvas.getContext('2d');
+const camera = { yaw: -0.4, pitch: 0.55 };
+let simulation, drag = null, frame = null;
+
+function parameters() {
+  return Object.fromEntries(ids.map(id => [id, id === 'plane' ? inputs[id].checked : Number(inputs[id].value)]));
+}
+function setParameters(values) {
+  for (const id of ids) {
+    if (id === 'plane') inputs[id].checked = typeof values[id] === 'boolean' ? values[id] : defaults[id];
+    else {
+      const value = Number(values[id] ?? defaults[id]);
+      inputs[id].value = Number.isFinite(value) ? Math.max(Number(inputs[id].min), Math.min(Number(inputs[id].max), value)) : defaults[id];
+    }
+  }
+}
+function save() {
+  try { localStorage.setItem('aeroscatter-v1', JSON.stringify({ parameters: parameters(), camera })); } catch { /* Storage can be disabled. */ }
+}
+setParameters(defaults);
+try {
+  const stored = JSON.parse(localStorage.getItem('aeroscatter-v1'));
+  if (stored?.parameters) setParameters(stored.parameters);
+  if (Number.isFinite(stored?.camera?.yaw)) camera.yaw = stored.camera.yaw;
+  if (Number.isFinite(stored?.camera?.pitch)) camera.pitch = Math.max(-1.3, Math.min(1.3, stored.camera.pitch));
+} catch { /* A fresh session uses defaults. */ }
+
+function update(recalculate = true) {
+  const p = parameters();
+  try {
+    for (const id of ids.filter(id => id !== 'plane')) {
+      $(id + '-value').textContent = id === 'theta' || id === 'phi' ? `${p[id]}°` : id === 'kappa' ? p[id].toFixed(3) : id === 'aspect' ? `${p[id].toFixed(2)} (${p[id] === 1 ? '球体' : p[id] > 1 ? '长椭球' : '扁椭球'})` : p[id].toFixed(3) + (id === 'index' ? '' : ' μm');
+    }
+    $('complex-index').textContent = `m = ${p.index.toFixed(2)} + ${p.kappa.toFixed(3)}i`;
+    if (recalculate) simulation = p.aspect === 1 ? model(p.radius, p.wavelength, p.index, p.kappa) : spheroidModel(p.radius, p.wavelength, p.index, p.kappa, p.aspect);
+    $('absorption-value').textContent = `Qsca = ${simulation.qsca.toPrecision(4)} · Qabs = ${simulation.qabs.toPrecision(4)} · Qext = ${simulation.qext.toPrecision(4)} · SSA = ${simulation.ssa.toFixed(4)}`;
+    const s = simulation.evaluate ? simulation.evaluate(radians(p.theta), radians(p.phi)) : intensity(simulation.coeff, Math.cos(radians(p.theta)));
+    $('shape-status').textContent = simulation.evaluate
+      ? `旋转椭球 · 电偶极近似；a=${simulation.a.toFixed(4)} μm，c=${simulation.c.toFixed(4)} μm；|m|k₀·最大半轴=${simulation.validity.toFixed(3)}。对称轴固定为 Z，φ 会影响散射与偏振。`
+      : '球体 · 完整 Mie 级数；r 为球半径。轴比改变后切换为小粒子椭球近似。';
+    const fraction = s.perpendicular / (s.perpendicular + s.parallel);
+    $('x-value').textContent = simulation.x.toFixed(3);
+    $('intensity-value').textContent = (s.total / simulation.peak).toPrecision(3);
+    $('pol-value').textContent = `${((s.dolp ?? Math.abs(s.signedPolarization)) * 100).toFixed(1)}%`;
+    for (const [id, value] of [['per', fraction], ['par', 1 - fraction]]) {
+      $(id + '-value').textContent = `${(value * 100).toFixed(1)}%`;
+      $(id + '-meter').value = value * 100;
+    }
+    $('orientation').textContent = simulation.evaluate
+      ? `椭球对称轴 Z；θ=${p.theta}°，φ=${p.phi}°。DoLP 含两基分量间的相关项，偏振主轴不一定与 E⊥/E∥ 重合。`
+      : p.theta === 0 || p.theta === 180
+      ? '正前向 / 正后向无净线偏振；散射平面不唯一，电场轴按当前方位角取极限定义。'
+      : Math.abs(s.signedPolarization) < 1e-6 ? '该方向无净线偏振。两条电场轴仅标方向，不代表振幅。'
+      : `选定方向 θ = ${p.theta}°、φ = ${p.phi}°；优势电场${s.signedPolarization > 0 ? '垂直' : '平行'}于散射平面。电场轴仅标方向。`;
+    $('error').hidden = true;
+    scheduleDraw();
+  } catch (error) {
+    simulation = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const id of ['x-value', 'intensity-value', 'pol-value', 'per-value', 'par-value']) $(id).textContent = '—';
+    $('per-meter').value = 0; $('par-meter').value = 0;
+    $('absorption-value').textContent = ''; $('orientation').textContent = '';
+    $('shape-status').textContent = '当前参数超出所选物理模型范围，未绘制结果。';
+    $('error').textContent = error.message;
+    $('error').hidden = false;
+  }
+}
+
+function scheduleDraw() {
+  if (frame !== null) return;
+  frame = requestAnimationFrame(() => { frame = null; draw(); });
+}
+function draw() {
+  if (!simulation) return;
+  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  const style = getComputedStyle(document.documentElement);
+  const color = name => style.getPropertyValue('--' + name).trim();
+  const scale = Math.min(w / 8.5, h / 7), p = parameters();
+  const theta = radians(p.theta), phi = radians(p.phi), basis = scatteringBasis(theta, phi);
+  const project = v => {
+    const x = v[0] * Math.cos(camera.yaw) + v[2] * Math.sin(camera.yaw);
+    const z = -v[0] * Math.sin(camera.yaw) + v[2] * Math.cos(camera.yaw);
+    return [w * 0.5 + x * scale, h * 0.51 - (v[1] * Math.cos(camera.pitch) - z * Math.sin(camera.pitch)) * scale];
+  };
+  function line(points, stroke, alpha = 1, width = 1, dash = []) {
+    ctx.beginPath(); points.forEach((v, i) => { const q = project(v); i ? ctx.lineTo(...q) : ctx.moveTo(...q); });
+    ctx.strokeStyle = stroke; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.setLineDash(dash); ctx.stroke(); ctx.globalAlpha = 1; ctx.setLineDash([]);
+  }
+  function arrow(a, b, stroke, width = 2) {
+    line([a, b], stroke, 1, width);
+    const A = project(a), B = project(b), angle = Math.atan2(B[1] - A[1], B[0] - A[0]);
+    ctx.beginPath(); ctx.moveTo(...B);
+    ctx.lineTo(B[0] - 8 * Math.cos(angle - 0.4), B[1] - 8 * Math.sin(angle - 0.4));
+    ctx.lineTo(B[0] - 8 * Math.cos(angle + 0.4), B[1] - 8 * Math.sin(angle + 0.4));
+    ctx.closePath(); ctx.fillStyle = stroke; ctx.fill();
+  }
+  const labels = [];
+  function label(text, v) {
+    const q = project(v); ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+    const half = ctx.measureText(text).width / 2 + 4;
+    const x = Math.max(half + 4, Math.min(w - half - 4, q[0]));
+    let y = Math.max(20, Math.min(h - 40, q[1]));
+    for (let i = 0; i < 8 && labels.some(b => Math.abs(x - b.x) < half + b.half && Math.abs(y - b.y) < 18); i++) {
+      y = Math.max(20, Math.min(h - 40, q[1] + (i % 2 ? -1 : 1) * (Math.floor(i / 2) + 1) * 20));
+    }
+    labels.push({ x, y, half }); ctx.fillStyle = color('ink'); ctx.textAlign = 'center'; ctx.fillText(text, x, y);
+  }
+  const onPlane = (x, r) => [x, r * Math.cos(phi), r * Math.sin(phi)];
+  if (p.plane) {
+    const plane = [[-3.3, -0.8], [3.3, -0.8], [3.3, 3]].map(v => onPlane(...v));
+    plane.push(onPlane(-3.3, 3));
+    ctx.beginPath(); plane.forEach((v, i) => { const q = project(v); i ? ctx.lineTo(...q) : ctx.moveTo(...q); }); ctx.closePath();
+    ctx.fillStyle = color('ink'); ctx.globalAlpha = 0.06; ctx.fill(); ctx.globalAlpha = 1;
+    line([...plane, plane[0]], color('ink'), 0.25);
+    for (let x = -3; x <= 3; x++) line([onPlane(x, -0.8), onPlane(x, 3)], color('ink'), 0.09);
+    for (let r = 0; r <= 3; r++) line([onPlane(-3.3, r), onPlane(3.3, r)], color('ink'), 0.09);
+    label('散射平面', onPlane(-1.8, 2.5));
+  }
+  const surface = (i, azimuth) => {
+    const t = i * Math.PI / 720;
+    const total = simulation.evaluate ? simulation.evaluate(t, azimuth).total : simulation.samples[i].total;
+    const r = 2.7 * Math.sqrt(total / simulation.peak);
+    return [r * Math.cos(t), r * Math.sin(t) * Math.cos(azimuth), r * Math.sin(t) * Math.sin(azimuth)];
+  };
+  for (let j = 0; j < 18; j++) line(simulation.samples.map((_, i) => surface(i, j * Math.PI / 9)), color('intensity'), 0.32);
+  for (let i = 24; i < 720; i += 36) line(Array.from({ length: 73 }, (_, j) => surface(i, j * Math.PI / 36)), color('intensity'), 0.3);
+  line([[-3.6, 0, 0], [3.5, 0, 0]], color('muted'), 0.4, 1, [4, 5]);
+  arrow([-3.6, 0, 0], [-0.3, 0, 0], color('intensity'), 2.5);
+  label('入射光', [-2.7, -0.5, 0]); label('前向 0°', [3.1, -0.5, 0]);
+  const q = basis.direction.map(v => v * 2.25);
+  arrow([0, 0, 0], q, color('ink'), 2);
+  label('散射光', add(basis.direction.map(v => v * 2.85), basis.radial, 0.1));
+  arrow(add(q, basis.perpendicular, -0.5), add(q, basis.perpendicular, 0.5), color('per'), 3);
+  arrow(add(q, basis.parallel, -0.5), add(q, basis.parallel, 0.5), color('par'), 3);
+  label('E⊥', add(q, basis.perpendicular, 0.85)); label('E∥', add(q, basis.parallel, 0.85));
+  line(Array.from({ length: 50 }, (_, i) => onPlane(0.6 * Math.cos(theta * i / 49), 0.6 * Math.sin(theta * i / 49))), color('muted'), 0.9);
+  label('θ', onPlane(0.9 * Math.cos(theta / 2), 0.9 * Math.sin(theta / 2)));
+  const markerA = 0.22 / Math.cbrt(p.aspect), markerC = 0.22 * p.aspect ** (2 / 3);
+  for (let j = 0; j < 6; j++) {
+    const az = j * Math.PI / 6;
+    line(Array.from({ length: 65 }, (_, i) => { const t = i * Math.PI / 32; return [markerA * Math.cos(t) * Math.cos(az), markerA * Math.cos(t) * Math.sin(az), markerC * Math.sin(t)]; }), color('ink'), 0.8, 1.3);
+  }
+  if (p.aspect !== 1) { line([[0, 0, -0.65], [0, 0, 0.65]], color('ink'), 0.7, 1, [3, 3]); label('对称轴 Z', [0, 0, 0.9]); }
+  document.documentElement.dataset.appReady = 'true';
+}
+
+for (const id of ids) {
+  inputs[id].addEventListener('input', () => update(!simulation || ['radius', 'wavelength', 'index', 'kappa', 'aspect'].includes(id)));
+  inputs[id].addEventListener('change', save);
+}
+$('reset').addEventListener('click', () => { setParameters(defaults); camera.yaw = -0.4; camera.pitch = 0.55; update(); save(); });
+$('ellipsoid-example').addEventListener('click', () => { setParameters({ ...parameters(), radius: 0.008, wavelength: 0.55, index: 1.5, kappa: 0, aspect: 2 }); update(); save(); });
+$('view-reset').addEventListener('click', () => { camera.yaw = -0.4; camera.pitch = 0.55; scheduleDraw(); save(); });
+canvas.addEventListener('pointerdown', e => { if (e.isPrimary) { drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); } });
+canvas.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  camera.yaw += (e.clientX - drag.x) * 0.008;
+  camera.pitch = Math.max(-1.3, Math.min(1.3, camera.pitch + (e.clientY - drag.y) * 0.008));
+  drag.x = e.clientX; drag.y = e.clientY; scheduleDraw();
+});
+canvas.addEventListener('pointerup', () => { drag = null; save(); });
+canvas.addEventListener('lostpointercapture', () => { drag = null; });
+canvas.addEventListener('pointercancel', () => { drag = null; });
+canvas.addEventListener('keydown', e => {
+  const moves = { ArrowLeft: [-0.1, 0], ArrowRight: [0.1, 0], ArrowUp: [0, -0.1], ArrowDown: [0, 0.1] };
+  if (!moves[e.key]) return;
+  e.preventDefault(); camera.yaw += moves[e.key][0]; camera.pitch = Math.max(-1.3, Math.min(1.3, camera.pitch + moves[e.key][1])); scheduleDraw(); save();
+});
+new ResizeObserver(scheduleDraw).observe(canvas);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', scheduleDraw);
+update();
+
+let installPrompt;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; $('install').hidden = false; });
+$('install').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt(); installPrompt = null; $('install').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('install').hidden = true; });
+if (location.protocol !== 'file:' && 'serviceWorker' in navigator && window.isSecureContext) {
+  const offlineTimer = setTimeout(() => {
+    $('offline-status').textContent = '离线缓存尚未就绪；不影响三维图使用';
+  }, 8000);
+  navigator.serviceWorker.register('./sw.js').then(async () => {
+    await navigator.serviceWorker.ready;
+    clearTimeout(offlineTimer);
+    $('offline-status').textContent = '离线资源已就绪 · 安装方法见 README';
+  }).catch(() => { clearTimeout(offlineTimer); $('offline-status').textContent = '离线缓存未启用；三维图仍可使用'; });
+} else $('offline-status').textContent = location.protocol === 'file:' ? '本地文件模式 · 三维图可用；安装 App 请使用启动入口' : '离线安装需 HTTPS 或 localhost';
+
+})();
+</script>
+</body>
+</html>

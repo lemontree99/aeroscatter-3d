@@ -1,0 +1,61 @@
+{
+  "checkedDate": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "version": "0.2.0",
+  "node": "v24.18.0",
+  "testCommand": "node --test --test-reporter=tap",
+  "testExitCode": 0,
+  "summary": {
+    "tests": 74,
+    "pass": 74,
+    "fail": 0,
+    "skipped": 0
+  },
+  "reference": {
+    "implementation": "miepython",
+    "version": "2.5.5",
+    "realCases": 15,
+    "absorbingCases": 45,
+    "scalarComparisons": 990,
+    "relativeTolerance": 0.00001,
+    "absoluteTolerance": 1e-18,
+    "uiConvention": "n+i*kappa",
+    "referenceConvention": "n-i*kappa"
+  },
+  "standalone": {
+    "inlineScripts": 2,
+    "externalJavaScript": false,
+    "externalStylesheet": false,
+    "hasAbsorptionControl": true,
+    "bytes": 33088,
+    "scriptSyntaxCheck": "passed",
+    "fileProtocolBrowserTest": "not performed; browser tool disallows file://"
+  },
+  "browserEvidence": {
+    "source": "VALIDATION.md / preview-v02.jpg",
+    "mode": "HTTP, local in-app browser",
+    "kappa": 0.1,
+    "qscaDisplayed": 0.1529,
+    "qabsDisplayed": 0.2431,
+    "qextDisplayed": 0.396,
+    "ssaDisplayed": 0.3862,
+    "mobileWidth": 320,
+    "mobileDocumentWidth": 320
+  },
+  "gitInitializedInProject": false,
+  "sha256": {
+    "web/mie.js": "44d7de06d671e838d567a280255eaa9a3c6173f87cc7f9e5ad078e6a8bacd263",
+    "web/geometry.js": "e87c4ffde2daf3a8482b928274fb359809e7ee7acee6f14c317ad9604a6d3d0c",
+    "web/app.js": "4643ab457ef21f970aab41b60ba602d191ac1950a281509fac948d2c168180f8",
+    "web/index.html": "259df3c656d25ba257b22bc8e9dc6d66906739b4f635d31d4dd53c632d1ba0c9",
+    "web/sw.js": "cecd33733313bfc4aeca57d47d9ce8cd60dcefa006241cd66ae45a6b4eee3b41",
+    "web/app.bundle.js": "4637f0465446302014be2f8332d7938167a727d5cf62784e1dac043a172bfb1e",
+    "AeroScatter.html": "23309dae4f8ea610aca0587c628706dceadc2080208bda5550d8a7bea7799057",
+    "tests/miepython-reference.json": "00961e1f17da034a0f2982cf5456bba46c47d542a230c9ddfa95f77a005927a3",
+    "tests/absorbing-reference.json": "10739b5e70046f5af07e68293062abe74acdbc36cfc50ab715d42369e4c3e5d6",
+    "docs/TECHNICAL.md": "8c70eccee0427dcee990b260afe7103fec7057a7085104f6c35c8d88c8812ecf",
+    "PROJECT_STATE.md": "41f85488286e4253f16361f1a9748028dfd6885bbe331faaee220fcb2b5c3890",
+    "HANDOFF.md": "f302323e9aef21104f611a9514d37372c4a1d5b11dbecc5a40b101a392c19646",
+    "logs/2026-10-21-development.md": "14b7e97c9c0e867581c707f7a0f67c0949ce3d786f579a659998792b98ca2910"
+  }
+}

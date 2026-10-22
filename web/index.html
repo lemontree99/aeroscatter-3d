@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102d3b">
+  <meta name="description" content="球体 Mie 散射与小粒子旋转椭球的电偶极散射、三维强度和偏振演示。支持离线使用。">
+  <title>AeroScatter 3D · 散射与偏振</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css?v=0.3.0">
+  <script defer src="./startup.js?v=0.3.0"></script>
+  <script defer src="./app.bundle.js?v=0.3.0"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./"><img src="./icons/icon.svg" alt="" width="38" height="38"><span>AeroScatter <b>3D</b><small>气溶胶散射与偏振实验室</small></span></a>
+    <div class="header-actions"><span class="version">v0.3 · 球体与旋转椭球</span><button id="install" hidden>安装 App</button><a href="#guide">使用说明 ↗</a></div>
+  </header>
+  <main>
+    <section class="intro"><div class="eyebrow">LIGHT · PARTICLE · POLARIZATION</div><h1>看见散射，理解偏振。</h1><p>改变粒子与光的参数，观察三维强度分布，以及选定方向上的电场分量。</p></section>
+    <div class="workspace">
+      <aside class="controls" aria-label="模拟参数">
+        <div class="section-title"><h2>实验参数</h2><button id="reset" class="quiet">恢复默认</button></div>
+        <label for="aspect">轴比 c/a <output id="aspect-value" for="aspect"></output></label>
+        <input id="aspect" type="range" min="0.25" max="4" step="0.05" value="1">
+        <div class="range-ends"><span>0.25 · 扁椭球</span><span>4.00 · 长椭球</span></div>
+        <button id="ellipsoid-example" class="quiet">小粒子椭球示例</button>
+        <p class="hint">a 为赤道半轴、c 为 Z 方向半轴；c/a=1 为球。等体积半径固定时改变轴比。椭球仅支持小粒子电偶极近似。</p>
+        <label for="radius">等体积半径 r <output id="radius-value" for="radius"></output></label>
+        <input id="radius" type="range" min="0.004" max="1" step="0.001" value="0.08">
+        <div class="range-ends"><span>0.004 μm</span><span>1.000 μm</span></div>
+        <label for="wavelength">真空波长 λ <output id="wavelength-value" for="wavelength"></output></label>
+        <input id="wavelength" type="range" min="0.4" max="0.8" step="0.01" value="0.55">
+        <div class="range-ends"><span>0.40 μm</span><span>0.80 μm</span></div>
+        <label for="index">折射率实部 n <output id="index-value" for="index"></output></label>
+        <input id="index" type="range" min="1.01" max="2" step="0.01" value="1.5">
+        <div class="range-ends"><span>1.01</span><span>2.00</span></div>
+        <label for="kappa">吸收虚部 κ <output id="kappa-value" for="kappa"></output></label>
+        <input id="kappa" type="range" min="0" max="1" step="0.001" value="0">
+        <div class="range-ends"><span>0 · 无吸收</span><span>1.000</span></div>
+        <p class="hint"><span id="complex-index">m = 1.50 + 0.000i</span><br>采用 m = n + iκ，κ ≥ 0 表示吸收。参数不对应特定气溶胶成分。</p>
+        <hr>
+        <h2>选择散射方向</h2>
+        <label for="theta">散射角 θ <output id="theta-value" for="theta"></output></label>
+        <input id="theta" type="range" min="0" max="180" step="1" value="90">
+        <div class="range-ends"><span>前向 0°</span><span>后向 180°</span></div>
+        <label for="phi">方位角 φ <output id="phi-value" for="phi"></output></label>
+        <input id="phi" type="range" min="0" max="360" step="1" value="0">
+        <p class="hint">方位角让散射方向绕入射光轴转动；拖动图像只改变你的观察视角。</p>
+        <hr>
+        <label class="check"><input id="plane" type="checkbox">显示散射平面</label>
+        <p class="model-note">空气中均匀粒子 · 对称轴 Z<br>非偏振入射 · 单次散射 · 可吸收</p>
+      </aside>
+      <section class="experiment" aria-label="三维散射演示">
+        <div class="stage-heading"><div><span class="eyebrow">3D SCATTERING</span><h2>散射强度的空间分布</h2></div><button id="view-reset" class="quiet">复位视角</button></div>
+        <p id="shape-status" class="orientation" aria-live="polite"></p>
+        <div class="stage"><canvas id="scene" tabindex="0" role="img" aria-label="球体或旋转椭球的三维散射强度与偏振方向。拖动或使用方向键旋转视角。">浏览器需要支持 Canvas 才能显示三维图。</canvas><div class="stage-tip">拖动 / 方向键旋转视角</div></div>
+        <div class="legend"><span><i class="swatch intensity"></i>总强度网格</span><span><i class="swatch perpendicular"></i>E⊥ 垂直电场</span><span><i class="swatch parallel"></i>E∥ 平行电场</span></div>
+        <p class="scale-note">网格半径 ∝ √相对强度；每组参数独立归一化，不能用图形大小比较绝对散射强弱。电场箭头只表示方向。</p>
+        <div class="readings" aria-live="polite" aria-atomic="true">
+          <div><span>尺寸参数 x</span><strong id="x-value">—</strong></div>
+          <div><span>选定方向相对强度</span><strong id="intensity-value">—</strong></div>
+          <div><span>线偏振度 DoLP</span><strong id="pol-value">—</strong></div>
+        </div>
+        <p id="absorption-value" class="orientation" aria-live="polite"></p>
+        <div class="components"><div><label for="per-meter">垂直分量 I⊥ <span id="per-value"></span></label><meter id="per-meter" min="0" max="100" value="50">50%</meter></div><div><label for="par-meter">平行分量 I∥ <span id="par-value"></span></label><meter id="par-meter" min="0" max="100" value="50">50%</meter></div></div>
+        <p id="orientation" class="orientation"></p><p id="error" role="alert" hidden></p>
+      </section>
+    </div>
+    <section id="guide" class="guide"><div class="eyebrow">A FEW THINGS TO KNOW</div><h2>从方向，到强度，再到偏振。</h2><div class="guide-grid">
+      <article><span class="step">01 / 几何</span><h3>平面由两条传播方向决定</h3><p>入射方向与选定的散射方向共同确定散射平面。θ 改变偏离入射方向的角度；φ 改变绕入射轴的方位。前向与后向时平面不唯一，图中使用当前方位角的极限基。</p></article>
+      <article><span class="step">02 / 强度</span><h3>不是粒子表面，也不是光的轨迹</h3><p>网格是各方向散射强度的示意包络。离中心越远，该方向相对强度越大。球体用 I = (|S₁|² + |S₂|²)/2；椭球由两种入射电场诱导的偶极投影求和。所示强度不是带有仪器与距离信息的实际辐亮度。</p></article>
+      <article><span class="step">03 / 偏振</span><h3>垂直的是电场，不是光的去向</h3><p>E⊥ 垂直于散射平面；E∥ 在面内，且与散射光传播方向垂直。条形是同一方向两分量的强度占比。小粒子近似下，90° 侧向散射趋近完全线偏振，不代表所有光只向一个平面传播。</p></article>
+    </div></section>
+    <details class="technical"><summary>物理范围、计算定义与参考资料</summary><p>球体（c/a=1）使用 Mie 级数，0.05≤x≤16；旋转椭球使用带辐射反作用修正的准静态电偶极近似，要求 |m|·2π·max(a,c)/λ≤0.3。该阈值是保守使用限制，不代表已验证的误差上界；不包含有限尺寸高阶多极、任意取向或任意形状解。等体积半径 r³=a²c，长短轴比为 max(c/a,a/c)。中央粒子示意保留轴比，但不与强度网格按真实长度同比例绘制。</p><p>环境折射率为1；m=n+iκ，n=1.01–2，κ=0–1，时间因子 exp(−iωt)。Qabs=Qext−Qsca；SSA=Qsca/Qext。效率统一以等体积球截面 πr² 归一化，并非椭球投影面积，也不是百分比。超出范围时不显示旧结果。</p><p>椭球对称轴固定 Z、入射光沿 X，φ 可改变强度。DoLP 使用完整线偏振相干矩阵，包含非对角项；两条 E 基方向不一定是偏振主轴。球体仍采用 |I⊥−I∥|/(I⊥+I∥)。网格逐参数归一化，不用于比较绝对强弱；不支持粒径分布或多次散射。</p><p>数值参照：<a href="https://miepython.readthedocs.io/en/stable/" target="_blank" rel="noreferrer">miepython 文档</a>；椭球准静态极化率与去极化因子采用均匀介质椭球标准解，验证范围与公式见项目 docs/TECHNICAL.md。</p></details>
+  </main>
+  <footer><span>AeroScatter 3D · 本地计算，无需上传数据</span><span id="offline-status" role="status">正在准备离线资源…</span></footer>
+  <noscript><p>请启用 JavaScript 以运行散射计算。</p></noscript>
+</body>
+</html>

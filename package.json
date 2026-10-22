@@ -1,0 +1,15 @@
+{
+  "name": "aeroscatter-3d",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Interactive single-sphere Mie scattering and polarization explorer",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test",
+    "build": "node scripts/build.mjs",
+    "icons": "node scripts/icons.mjs"
+  }
+}

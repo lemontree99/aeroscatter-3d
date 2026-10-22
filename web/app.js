@@ -1,0 +1,198 @@
+import { model, intensity } from './mie.js';
+import { spheroidModel } from './spheroid.js';
+import { radians, add, scatteringBasis } from './geometry.js';
+
+const $ = id => document.getElementById(id);
+const defaults = { radius: 0.08, wavelength: 0.55, index: 1.5, kappa: 0, aspect: 1, theta: 90, phi: 0, plane: false };
+const ids = Object.keys(defaults), inputs = Object.fromEntries(ids.map(id => [id, $(id)]));
+const canvas = $('scene'), ctx = canvas.getContext('2d');
+const camera = { yaw: -0.4, pitch: 0.55 };
+let simulation, drag = null, frame = null;
+
+function parameters() {
+  return Object.fromEntries(ids.map(id => [id, id === 'plane' ? inputs[id].checked : Number(inputs[id].value)]));
+}
+function setParameters(values) {
+  for (const id of ids) {
+    if (id === 'plane') inputs[id].checked = typeof values[id] === 'boolean' ? values[id] : defaults[id];
+    else {
+      const value = Number(values[id] ?? defaults[id]);
+      inputs[id].value = Number.isFinite(value) ? Math.max(Number(inputs[id].min), Math.min(Number(inputs[id].max), value)) : defaults[id];
+    }
+  }
+}
+function save() {
+  try { localStorage.setItem('aeroscatter-v1', JSON.stringify({ parameters: parameters(), camera })); } catch { /* Storage can be disabled. */ }
+}
+setParameters(defaults);
+try {
+  const stored = JSON.parse(localStorage.getItem('aeroscatter-v1'));
+  if (stored?.parameters) setParameters(stored.parameters);
+  if (Number.isFinite(stored?.camera?.yaw)) camera.yaw = stored.camera.yaw;
+  if (Number.isFinite(stored?.camera?.pitch)) camera.pitch = Math.max(-1.3, Math.min(1.3, stored.camera.pitch));
+} catch { /* A fresh session uses defaults. */ }
+
+function update(recalculate = true) {
+  const p = parameters();
+  try {
+    for (const id of ids.filter(id => id !== 'plane')) {
+      $(id + '-value').textContent = id === 'theta' || id === 'phi' ? `${p[id]}°` : id === 'kappa' ? p[id].toFixed(3) : id === 'aspect' ? `${p[id].toFixed(2)} (${p[id] === 1 ? '球体' : p[id] > 1 ? '长椭球' : '扁椭球'})` : p[id].toFixed(3) + (id === 'index' ? '' : ' μm');
+    }
+    $('complex-index').textContent = `m = ${p.index.toFixed(2)} + ${p.kappa.toFixed(3)}i`;
+    if (recalculate) simulation = p.aspect === 1 ? model(p.radius, p.wavelength, p.index, p.kappa) : spheroidModel(p.radius, p.wavelength, p.index, p.kappa, p.aspect);
+    $('absorption-value').textContent = `Qsca = ${simulation.qsca.toPrecision(4)} · Qabs = ${simulation.qabs.toPrecision(4)} · Qext = ${simulation.qext.toPrecision(4)} · SSA = ${simulation.ssa.toFixed(4)}`;
+    const s = simulation.evaluate ? simulation.evaluate(radians(p.theta), radians(p.phi)) : intensity(simulation.coeff, Math.cos(radians(p.theta)));
+    $('shape-status').textContent = simulation.evaluate
+      ? `旋转椭球 · 电偶极近似；a=${simulation.a.toFixed(4)} μm，c=${simulation.c.toFixed(4)} μm；|m|k₀·最大半轴=${simulation.validity.toFixed(3)}。对称轴固定为 Z，φ 会影响散射与偏振。`
+      : '球体 · 完整 Mie 级数；r 为球半径。轴比改变后切换为小粒子椭球近似。';
+    const fraction = s.perpendicular / (s.perpendicular + s.parallel);
+    $('x-value').textContent = simulation.x.toFixed(3);
+    $('intensity-value').textContent = (s.total / simulation.peak).toPrecision(3);
+    $('pol-value').textContent = `${((s.dolp ?? Math.abs(s.signedPolarization)) * 100).toFixed(1)}%`;
+    for (const [id, value] of [['per', fraction], ['par', 1 - fraction]]) {
+      $(id + '-value').textContent = `${(value * 100).toFixed(1)}%`;
+      $(id + '-meter').value = value * 100;
+    }
+    $('orientation').textContent = simulation.evaluate
+      ? `椭球对称轴 Z；θ=${p.theta}°，φ=${p.phi}°。DoLP 含两基分量间的相关项，偏振主轴不一定与 E⊥/E∥ 重合。`
+      : p.theta === 0 || p.theta === 180
+      ? '正前向 / 正后向无净线偏振；散射平面不唯一，电场轴按当前方位角取极限定义。'
+      : Math.abs(s.signedPolarization) < 1e-6 ? '该方向无净线偏振。两条电场轴仅标方向，不代表振幅。'
+      : `选定方向 θ = ${p.theta}°、φ = ${p.phi}°；优势电场${s.signedPolarization > 0 ? '垂直' : '平行'}于散射平面。电场轴仅标方向。`;
+    $('error').hidden = true;
+    scheduleDraw();
+  } catch (error) {
+    simulation = null;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const id of ['x-value', 'intensity-value', 'pol-value', 'per-value', 'par-value']) $(id).textContent = '—';
+    $('per-meter').value = 0; $('par-meter').value = 0;
+    $('absorption-value').textContent = ''; $('orientation').textContent = '';
+    $('shape-status').textContent = '当前参数超出所选物理模型范围，未绘制结果。';
+    $('error').textContent = error.message;
+    $('error').hidden = false;
+  }
+}
+
+function scheduleDraw() {
+  if (frame !== null) return;
+  frame = requestAnimationFrame(() => { frame = null; draw(); });
+}
+function draw() {
+  if (!simulation) return;
+  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  const style = getComputedStyle(document.documentElement);
+  const color = name => style.getPropertyValue('--' + name).trim();
+  const scale = Math.min(w / 8.5, h / 7), p = parameters();
+  const theta = radians(p.theta), phi = radians(p.phi), basis = scatteringBasis(theta, phi);
+  const project = v => {
+    const x = v[0] * Math.cos(camera.yaw) + v[2] * Math.sin(camera.yaw);
+    const z = -v[0] * Math.sin(camera.yaw) + v[2] * Math.cos(camera.yaw);
+    return [w * 0.5 + x * scale, h * 0.51 - (v[1] * Math.cos(camera.pitch) - z * Math.sin(camera.pitch)) * scale];
+  };
+  function line(points, stroke, alpha = 1, width = 1, dash = []) {
+    ctx.beginPath(); points.forEach((v, i) => { const q = project(v); i ? ctx.lineTo(...q) : ctx.moveTo(...q); });
+    ctx.strokeStyle = stroke; ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.setLineDash(dash); ctx.stroke(); ctx.globalAlpha = 1; ctx.setLineDash([]);
+  }
+  function arrow(a, b, stroke, width = 2) {
+    line([a, b], stroke, 1, width);
+    const A = project(a), B = project(b), angle = Math.atan2(B[1] - A[1], B[0] - A[0]);
+    ctx.beginPath(); ctx.moveTo(...B);
+    ctx.lineTo(B[0] - 8 * Math.cos(angle - 0.4), B[1] - 8 * Math.sin(angle - 0.4));
+    ctx.lineTo(B[0] - 8 * Math.cos(angle + 0.4), B[1] - 8 * Math.sin(angle + 0.4));
+    ctx.closePath(); ctx.fillStyle = stroke; ctx.fill();
+  }
+  const labels = [];
+  function label(text, v) {
+    const q = project(v); ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif';
+    const half = ctx.measureText(text).width / 2 + 4;
+    const x = Math.max(half + 4, Math.min(w - half - 4, q[0]));
+    let y = Math.max(20, Math.min(h - 40, q[1]));
+    for (let i = 0; i < 8 && labels.some(b => Math.abs(x - b.x) < half + b.half && Math.abs(y - b.y) < 18); i++) {
+      y = Math.max(20, Math.min(h - 40, q[1] + (i % 2 ? -1 : 1) * (Math.floor(i / 2) + 1) * 20));
+    }
+    labels.push({ x, y, half }); ctx.fillStyle = color('ink'); ctx.textAlign = 'center'; ctx.fillText(text, x, y);
+  }
+  const onPlane = (x, r) => [x, r * Math.cos(phi), r * Math.sin(phi)];
+  if (p.plane) {
+    const plane = [[-3.3, -0.8], [3.3, -0.8], [3.3, 3]].map(v => onPlane(...v));
+    plane.push(onPlane(-3.3, 3));
+    ctx.beginPath(); plane.forEach((v, i) => { const q = project(v); i ? ctx.lineTo(...q) : ctx.moveTo(...q); }); ctx.closePath();
+    ctx.fillStyle = color('ink'); ctx.globalAlpha = 0.06; ctx.fill(); ctx.globalAlpha = 1;
+    line([...plane, plane[0]], color('ink'), 0.25);
+    for (let x = -3; x <= 3; x++) line([onPlane(x, -0.8), onPlane(x, 3)], color('ink'), 0.09);
+    for (let r = 0; r <= 3; r++) line([onPlane(-3.3, r), onPlane(3.3, r)], color('ink'), 0.09);
+    label('散射平面', onPlane(-1.8, 2.5));
+  }
+  const surface = (i, azimuth) => {
+    const t = i * Math.PI / 720;
+    const total = simulation.evaluate ? simulation.evaluate(t, azimuth).total : simulation.samples[i].total;
+    const r = 2.7 * Math.sqrt(total / simulation.peak);
+    return [r * Math.cos(t), r * Math.sin(t) * Math.cos(azimuth), r * Math.sin(t) * Math.sin(azimuth)];
+  };
+  for (let j = 0; j < 18; j++) line(simulation.samples.map((_, i) => surface(i, j * Math.PI / 9)), color('intensity'), 0.32);
+  for (let i = 24; i < 720; i += 36) line(Array.from({ length: 73 }, (_, j) => surface(i, j * Math.PI / 36)), color('intensity'), 0.3);
+  line([[-3.6, 0, 0], [3.5, 0, 0]], color('muted'), 0.4, 1, [4, 5]);
+  arrow([-3.6, 0, 0], [-0.3, 0, 0], color('intensity'), 2.5);
+  label('入射光', [-2.7, -0.5, 0]); label('前向 0°', [3.1, -0.5, 0]);
+  const q = basis.direction.map(v => v * 2.25);
+  arrow([0, 0, 0], q, color('ink'), 2);
+  label('散射光', add(basis.direction.map(v => v * 2.85), basis.radial, 0.1));
+  arrow(add(q, basis.perpendicular, -0.5), add(q, basis.perpendicular, 0.5), color('per'), 3);
+  arrow(add(q, basis.parallel, -0.5), add(q, basis.parallel, 0.5), color('par'), 3);
+  label('E⊥', add(q, basis.perpendicular, 0.85)); label('E∥', add(q, basis.parallel, 0.85));
+  line(Array.from({ length: 50 }, (_, i) => onPlane(0.6 * Math.cos(theta * i / 49), 0.6 * Math.sin(theta * i / 49))), color('muted'), 0.9);
+  label('θ', onPlane(0.9 * Math.cos(theta / 2), 0.9 * Math.sin(theta / 2)));
+  const markerA = 0.22 / Math.cbrt(p.aspect), markerC = 0.22 * p.aspect ** (2 / 3);
+  for (let j = 0; j < 6; j++) {
+    const az = j * Math.PI / 6;
+    line(Array.from({ length: 65 }, (_, i) => { const t = i * Math.PI / 32; return [markerA * Math.cos(t) * Math.cos(az), markerA * Math.cos(t) * Math.sin(az), markerC * Math.sin(t)]; }), color('ink'), 0.8, 1.3);
+  }
+  if (p.aspect !== 1) { line([[0, 0, -0.65], [0, 0, 0.65]], color('ink'), 0.7, 1, [3, 3]); label('对称轴 Z', [0, 0, 0.9]); }
+  document.documentElement.dataset.appReady = 'true';
+}
+
+for (const id of ids) {
+  inputs[id].addEventListener('input', () => update(!simulation || ['radius', 'wavelength', 'index', 'kappa', 'aspect'].includes(id)));
+  inputs[id].addEventListener('change', save);
+}
+$('reset').addEventListener('click', () => { setParameters(defaults); camera.yaw = -0.4; camera.pitch = 0.55; update(); save(); });
+$('ellipsoid-example').addEventListener('click', () => { setParameters({ ...parameters(), radius: 0.008, wavelength: 0.55, index: 1.5, kappa: 0, aspect: 2 }); update(); save(); });
+$('view-reset').addEventListener('click', () => { camera.yaw = -0.4; camera.pitch = 0.55; scheduleDraw(); save(); });
+canvas.addEventListener('pointerdown', e => { if (e.isPrimary) { drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); } });
+canvas.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  camera.yaw += (e.clientX - drag.x) * 0.008;
+  camera.pitch = Math.max(-1.3, Math.min(1.3, camera.pitch + (e.clientY - drag.y) * 0.008));
+  drag.x = e.clientX; drag.y = e.clientY; scheduleDraw();
+});
+canvas.addEventListener('pointerup', () => { drag = null; save(); });
+canvas.addEventListener('lostpointercapture', () => { drag = null; });
+canvas.addEventListener('pointercancel', () => { drag = null; });
+canvas.addEventListener('keydown', e => {
+  const moves = { ArrowLeft: [-0.1, 0], ArrowRight: [0.1, 0], ArrowUp: [0, -0.1], ArrowDown: [0, 0.1] };
+  if (!moves[e.key]) return;
+  e.preventDefault(); camera.yaw += moves[e.key][0]; camera.pitch = Math.max(-1.3, Math.min(1.3, camera.pitch + moves[e.key][1])); scheduleDraw(); save();
+});
+new ResizeObserver(scheduleDraw).observe(canvas);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', scheduleDraw);
+update();
+
+let installPrompt;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; $('install').hidden = false; });
+$('install').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  await installPrompt.prompt(); installPrompt = null; $('install').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('install').hidden = true; });
+if (location.protocol !== 'file:' && 'serviceWorker' in navigator && window.isSecureContext) {
+  const offlineTimer = setTimeout(() => {
+    $('offline-status').textContent = '离线缓存尚未就绪；不影响三维图使用';
+  }, 8000);
+  navigator.serviceWorker.register('./sw.js').then(async () => {
+    await navigator.serviceWorker.ready;
+    clearTimeout(offlineTimer);
+    $('offline-status').textContent = '离线资源已就绪 · 安装方法见 README';
+  }).catch(() => { clearTimeout(offlineTimer); $('offline-status').textContent = '离线缓存未启用；三维图仍可使用'; });
+} else $('offline-status').textContent = location.protocol === 'file:' ? '本地文件模式 · 三维图可用；安装 App 请使用启动入口' : '离线安装需 HTTPS 或 localhost';
